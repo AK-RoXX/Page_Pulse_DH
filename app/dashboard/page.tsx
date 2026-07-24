@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { 
-  Zap, 
-  Search, 
-  AlertTriangle, 
-  Clock, 
-  FileText, 
-  Heading, 
-  Image as ImageIcon, 
-  FileCode2, 
+import {
+  Zap,
+  Search,
+  AlertTriangle,
+  Clock,
+  FileText,
+  Heading,
+  Image as ImageIcon,
+  FileCode2,
   ExternalLink,
   ShieldCheck,
   Activity,
@@ -148,11 +148,11 @@ export default function Dashboard() {
             prev.map((a) =>
               a.id === item.id
                 ? {
-                    ...a,
-                    status: 'error',
-                    statusErrCode: 500,
-                    error: 'Client-side failure. Could not communicate with Page Pulse audit service.',
-                  }
+                  ...a,
+                  status: 'error',
+                  statusErrCode: 500,
+                  error: 'Client-side failure. Could not communicate with Page Pulse audit service.',
+                }
                 : a
             )
           );
@@ -363,7 +363,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
             <div className="flex items-center gap-2 text-slate-200 font-mono text-sm font-semibold">
               <Layers className="w-4 h-4 text-cyan-400" />
-              <span>Simultaneous URL Auditor</span>
+              <span>URL Auditor</span>
             </div>
             <button
               type="button"
@@ -405,7 +405,7 @@ export default function Dashboard() {
               className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-black font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.3)]"
             >
               <Zap className="w-4 h-4 text-black fill-black" />
-              <span>Run Simultaneous Audit ({urlInputs.filter(u => u.trim()).length || 1})</span>
+              <span>Run Multiple Audits ({urlInputs.filter(u => u.trim()).length || 1})</span>
             </button>
           </form>
         </section>
@@ -426,11 +426,10 @@ export default function Dashboard() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTabId(item.id)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-mono shrink-0 transition-all flex items-center gap-2 border ${
-                      isActive
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-mono shrink-0 transition-all flex items-center gap-2 border ${isActive
                         ? 'bg-cyan-950/80 border-cyan-500 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
                         : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
-                    }`}
+                      }`}
                   >
                     {item.status === 'loading' && <Activity className="w-3 h-3 animate-spin text-cyan-400" />}
                     {item.status === 'success' && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}

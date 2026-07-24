@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Page Pulse — High Performance Web Auditor
 
-## Getting Started
+Page Pulse is a web application designed to audit URLs for essential HTTP, SEO, performance, and structure metrics in real time.
 
-First, run the development server:
+Built for **Digital Heroes Training Task**.  
+Live Demo: [https://digitalheroesco.com](https://digitalheroesco.com)
+
+---
+
+## 🛠️ Tech Stack & Setup
+
+- **Framework**: Next.js 16 (App Router) + React 19 + TypeScript
+- **Styling**: Tailwind CSS v4 + Lucide Icons + Glassmorphism / Cyberpunk Aesthetics
+- **Parsing**: Cheerio (Server-side HTML scraping)
+- **Testing**: Vitest
+- **Exporting**: jsPDF (Native vector PDF report generation)
+
+### Installation & Local Run
 
 ```bash
+# 1. Clone the repository & install dependencies
+npm install
+
+# 2. Run unit tests
+npm run test
+
+# 3. Start local development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔌 API Contract (`POST /api/audit`)
 
-## Learn More
+### Request Body
+```json
+{
+  "url": "https://example.com"
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Response `200 OK`
+```json
+{
+  "statusCode": 200,
+  "responseTimeMs": 142,
+  "title": "Example Domain",
+  "metaDescription": "Example domain for illustrative examples in documents.",
+  "h1Count": 1,
+  "imagesMissingAltCount": 0,
+  "wordCount: 125
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Strict Error Responses (Never Crashes)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **`400 Bad Request`**: Malformed URL or non-string input.
+- **`422 Unprocessable Entity`**: Target server responded with non-HTML content (e.g. `application/json` or binary).
+- **`502 Bad Gateway`**: Host unreachable, network failure, or DNS resolution failure.
+- **`504 Gateway Timeout`**: Target URL took longer than **8 seconds** to respond.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 💡 3 Key Design Decisions & Technical Reasoning
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 1. Isolated Pure Parser Function (`lib/parser.ts`)
+- **Reasoning**: Decoupling Cheerio DOM manipulation from Next.js request/response handling guarantees that parsing logic is 100% testable in isolation without mocking HTTP contexts.
+
+### 2. Direct Vector PDF Rendering via `jsPDF`
+- **Reasoning**: DOM-to-canvas rendering libraries like `html2canvas` often fail due to CORS asset security, canvas font rendering quirks, or layout overflow. Direct vector drawing in `jsPDF` ensures lightning-fast, crisp, 100% reliable PDF exports across all browsers.
+
+### 3. Native `fetch` with `AbortController` (8s Timeout)
+- **Reasoning**: Using native `fetch` with an explicit `AbortController` signal prevents backend Node.js worker pool exhaustion when auditing slow or unresponsive servers.
+
+---
+
+## 🧪 Testing Suite (`lib/parser.test.ts`)
+
+Run tests with:
+```bash
+npm run test
+```
+
+### Covered Test Scenarios:
+1. **Happy Path**: Complete valid HTML with all expected tags (`<title>`, `<meta>`, `<h1>`, `<img>` with alt).
+2. **Failure Case 1 (Missing Tags & Empty HTML)**: Handles missing metadata, missing tags, and empty/broken HTML without crashing.
+3. **Failure Case 2 (Missing or Blank `alt` Attributes)**: Accurately identifies `<img>` tags missing `alt`, empty `alt=""`, or whitespace-only `alt="   "`.
+4. **Edge Case (Code Noise Filtering)**: Ignores `<script>`, `<style>`, and `<svg>` contents when calculating body word count.

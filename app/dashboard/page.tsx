@@ -58,9 +58,18 @@ export default function Dashboard() {
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
 
-  // ── Persistence ─────────────────────────────────────────────────────────────
+  // ── Persistence & Query String Reading ───────────────────────────────────────
 
   useEffect(() => {
+    // Read optional ?url= parameter from landing page quick search
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const initialUrl = params.get('url');
+      if (initialUrl) {
+        setUrlInputs([initialUrl]);
+      }
+    }
+
     try {
       const saved = localStorage.getItem('page_pulse_history');
       if (saved) {

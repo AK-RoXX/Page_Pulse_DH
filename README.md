@@ -50,7 +50,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
   "metaDescription": "Example domain for illustrative examples in documents.",
   "h1Count": 1,
   "imagesMissingAltCount": 0,
-  "wordCount: 125
+  "wordCount": 125
 }
 ```
 

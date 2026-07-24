@@ -33,14 +33,14 @@ export function parseHtmlMetrics(
   const rawTitle = $('title').first().text().trim();
   const title = rawTitle.length > 0 ? rawTitle : null;
 
-  // Extract <meta name="description">
-  const rawMetaDesc = $('meta[name="description" i]').attr('content') || $('meta[name="Description" i]').attr('content');
+  // Extract <meta name="description"> — the `i` flag covers case-insensitivity, single selector sufficient
+  const rawMetaDesc = $('meta[name="description" i]').attr('content');
   const metaDescription = rawMetaDesc && rawMetaDesc.trim().length > 0 ? rawMetaDesc.trim() : null;
 
   // H1 count
   const h1Count = $('h1').length;
 
-  // Count of <img> missing alt attribute or where alt is empty/whitespace
+  // Count <img> tags missing alt attribute or where alt is empty/whitespace
   let imagesMissingAltCount = 0;
   $('img').each((_, el) => {
     const alt = $(el).attr('alt');
@@ -49,8 +49,7 @@ export function parseHtmlMetrics(
     }
   });
 
-  // Approximate body text word count
-  // Remove script and style tags to avoid counting code tokens
+  // Approximate body text word count — remove noise-generating tags first
   $('script, style, noscript, svg').remove();
   const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
   const wordCount = bodyText ? bodyText.split(/\s+/).filter(Boolean).length : 0;

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Pulse Extension</title>
+  <style>
+    :root {
+      --bg: #06080e;
+      --card-bg: #0d121d;
+      --card-border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      width: 360px;
+      min-height: 480px;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-family: monospace;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-family: monospace;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: var(--cyan);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--cyan);
+    }
+
+    button.btn {
+      background: linear-gradient(135deg, var(--cyan), var(--emerald));
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    button.btn-secondary {
+      background: #1e293b;
+      color: var(--cyan);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-family: monospace;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .status-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      font-family: monospace;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .metric-val {
+      font-size: 18px;
+      font-weight: 800;
+      font-family: monospace;
+    }
+
+    .val-cyan { color: var(--cyan); }
+    .val-emerald { color: var(--emerald); }
+    .val-amber { color: var(--amber); }
+
+    .detail-box {
+      background: #0a0f1d;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 11px;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    .hidden { display: none !important; }
+
+    .loading-spinner {
+      text-align: center;
+      padding: 24px;
+      color: var(--cyan);
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .error-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      padding: 10px;
+      color: #fca5a5;
+      font-size: 11px;
+    }
+
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding-top: 10px;
+      margin-top: 14px;
+      text-align: center;
+      font-size: 10px;
+      font-family: monospace;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--cyan);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">⚡ Page Pulse</div>
+    <div class="badge">Extension</div>
+  </div>
+
+  <!-- Quick Active Tab Button -->
+  <button id="btnActiveTab" class="btn-secondary">
+    🎯 Audit Active Browser Tab
+  </button>
+
+  <!-- Custom URL Input Form -->
+  <div class="input-group">
+    <input type="text" id="urlInput" placeholder="https://example.com" />
+    <button id="btnAudit" class="btn">Audit</button>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loadingState" class="loading-spinner hidden">
+    ⚡ Running URL Audit...
+  </div>
+
+  <!-- Error State -->
+  <div id="errorState" class="error-box hidden">
+    <strong id="errorTitle">Audit Error</strong>
+    <p id="errorDesc" style="margin-top:4px;"></p>
+  </div>
+
+  <!-- Audit Results Display -->
+  <div id="resultsState" class="hidden">
+    <div class="grid-2">
+      <div class="metric-card">
+        <div class="metric-label">HTTP STATUS</div>
+        <div id="valStatus" class="metric-val val-emerald">200</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">LATENCY</div>
+        <div id="valTime" class="metric-val val-cyan">0 ms</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">H1 TAGS</div>
+        <div id="valH1" class="metric-val">1</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">MISSING ALT</div>
+        <div id="valAlt" class="metric-val val-amber">0</div>
+      </div>
+    </div>
+
+    <div class="status-card">
+      <div class="metric-label">DOCUMENT TITLE</div>
+      <div id="valTitle" class="detail-box"></div>
+      <div style="margin-top: 8px;" class="metric-label">BODY WORDS</div>
+      <div id="valWords" class="detail-box" style="color: var(--cyan); font-weight: bold;"></div>
+    </div>
+
+    <div class="status-card">
+      <div class="metric-label">META DESCRIPTION</div>
+      <div id="valMeta" class="detail-box"></div>
+    </div>
+  </div>
+
+  <!-- Footer required text -->
+  <footer>
+    Built for <a href="https://digitalheroesco.com" target="_blank">Digital Heroes Training Task</a>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

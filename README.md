@@ -2,8 +2,9 @@
 
 Page Pulse is a web application designed to audit URLs for essential HTTP, SEO, performance, and structure metrics in real time.
 
-Built for **Digital Heroes Training Task**.  
-Live Demo: [https://digitalheroesco.com](https://digitalheroesco.com)
+Built for **Digital Heroes Training Task**. [https://digitalheroesco.com](https://digitalheroesco.com)  
+
+Live Demo: [https://page-pulse-dh.vercel.app](https://page-pulse-dh.vercel.app) 
 
 ---
 

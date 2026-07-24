@@ -168,30 +168,151 @@ export default function Dashboard() {
   };
 
   const downloadPdfReport = async () => {
-    if (!reportRef.current || !activeAudit || !activeAudit.result) return;
+    if (!activeAudit || !activeAudit.result) return;
 
     setIsExporting(true);
     try {
-      const element = reportRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        backgroundColor: '#0d121d',
-        useCORS: true,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
+      const doc = new jsPDF({
         orientation: 'portrait',
-        unit: 'mm',
+        unit: 'pt',
         format: 'a4',
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const res = activeAudit.result;
+      const cleanUrl = activeAudit.url;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`page-pulse-audit-${activeAudit.url.replace(/[^a-z0-9]/gi, '_')}.pdf`);
-    } catch {
+      // Dark background
+      doc.setFillColor(13, 18, 29); // #0d121d
+      doc.rect(0, 0, 595.28, 841.89, 'F');
+
+      // Title & Branding
+      doc.setTextColor(6, 182, 212); // Cyan
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.text('Page Pulse - Audit Report', 40, 50);
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 40, 68);
+
+      // Target URL Box
+      doc.setFillColor(15, 23, 42); // Slate 900
+      doc.roundedRect(40, 85, 515, 45, 6, 6, 'F');
+      doc.setDrawColor(30, 41, 59);
+      doc.roundedRect(40, 85, 515, 45, 6, 6, 'D');
+
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text('TARGET URL', 52, 102);
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(56, 189, 248); // Cyan
+      const truncatedUrl = cleanUrl.length > 65 ? cleanUrl.substring(0, 62) + '...' : cleanUrl;
+      doc.text(truncatedUrl, 52, 118);
+
+      // Key Metrics Row (4 Cards)
+      const cardY = 145;
+      const cardW = 120;
+      const cardH = 70;
+      const cardGap = 11.5;
+
+      const metricsList = [
+        { label: 'HTTP STATUS', val: `${res.statusCode}`, sub: res.statusCode >= 200 && res.statusCode < 300 ? 'OK' : 'Response', color: [16, 185, 129] },
+        { label: 'LATENCY', val: `${res.responseTimeMs} ms`, sub: 'Response Time', color: [6, 182, 212] },
+        { label: 'H1 TAGS', val: `${res.h1Count}`, sub: res.h1Count === 1 ? 'Optimal' : 'Tags', color: [129, 140, 248] },
+        { label: 'MISSING ALT', val: `${res.imagesMissingAltCount}`, sub: 'Images', color: res.imagesMissingAltCount === 0 ? [16, 185, 129] : [245, 158, 11] },
+      ];
+
+      metricsList.forEach((m, idx) => {
+        const cx = 40 + idx * (cardW + cardGap);
+        doc.setFillColor(15, 23, 42);
+        doc.roundedRect(cx, cardY, cardW, cardH, 6, 6, 'F');
+        doc.setDrawColor(30, 41, 59);
+        doc.roundedRect(cx, cardY, cardW, cardH, 6, 6, 'D');
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 116, 139);
+        doc.text(m.label, cx + 12, cardY + 20);
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(m.color[0], m.color[1], m.color[2]);
+        doc.text(m.val, cx + 12, cardY + 45);
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(148, 163, 184);
+        doc.text(m.sub, cx + 12, cardY + 58);
+      });
+
+      // Page Identification Section
+      const sec1Y = 235;
+      doc.setFillColor(15, 23, 42);
+      doc.roundedRect(40, sec1Y, 515, 110, 8, 8, 'F');
+      doc.setDrawColor(30, 41, 59);
+      doc.roundedRect(40, sec1Y, 515, 110, 8, 8, 'D');
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(226, 232, 240);
+      doc.text('PAGE IDENTIFICATION & WORD COUNT', 55, sec1Y + 25);
+
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 116, 139);
+      doc.text('DOCUMENT TITLE:', 55, sec1Y + 45);
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(241, 245, 249);
+      const titleText = res.title || 'No <title> element detected';
+      const splitTitle = doc.splitTextToSize(titleText, 485);
+      doc.text(splitTitle, 55, sec1Y + 60);
+
+      doc.setFontSize(9);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Body Text Word Count: ${res.wordCount.toLocaleString()} words`, 55, sec1Y + 95);
+
+      // SEO Metadata Section
+      const sec2Y = 360;
+      doc.setFillColor(15, 23, 42);
+      doc.roundedRect(40, sec2Y, 515, 135, 8, 8, 'F');
+      doc.setDrawColor(30, 41, 59);
+      doc.roundedRect(40, sec2Y, 515, 135, 8, 8, 'D');
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(226, 232, 240);
+      doc.text('SEO METADATA ANALYSIS', 55, sec2Y + 25);
+
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 116, 139);
+      doc.text('META DESCRIPTION:', 55, sec2Y + 45);
+
+      doc.setFontSize(9.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(226, 232, 240);
+      const metaText = res.metaDescription || 'No <meta name="description"> tag found on target page.';
+      const splitMeta = doc.splitTextToSize(metaText, 485);
+      doc.text(splitMeta, 55, sec2Y + 62);
+
+      // Footer
+      doc.setDrawColor(30, 41, 59);
+      doc.line(40, 790, 555, 790);
+
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 116, 139);
+      doc.text('Page Pulse Audit System', 40, 805);
+      doc.text('Built for Digital Heroes Training Task (https://digitalheroesco.com)', 270, 805);
+
+      doc.save(`page-pulse-audit-${cleanUrl.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+    } catch (err) {
+      console.error(err);
       alert('Failed to generate PDF report.');
     } finally {
       setIsExporting(false);
